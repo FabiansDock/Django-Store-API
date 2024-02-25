@@ -10,9 +10,9 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from store.filters import ProductFilter
 from store.pagination import ProductPagination
-from store.permissions import FullDjangoModelPermissions, IsAdminOrReadOnly, ViewHistoryPermission
-from .serializers import AddItemSerializer, CartItemsSerializer, CollectionSerializer, CustomerSerializer, ProductSerializer, ReviewSerializer, CartSerializer, UpdateItemSerializer
-from .models import Cart, CartItem, Collection, Customer, OrderItem, Product, Reviews
+from store.permissions import IsAdminOrReadOnly, ViewHistoryPermission
+from .serializers import AddItemSerializer, CartItemsSerializer, CollectionSerializer, CustomerSerializer, OrderSerializer, ProductSerializer, ReviewSerializer, CartSerializer, UpdateItemSerializer
+from .models import Cart, CartItem, Collection, Customer, Order, OrderItem, Product, Reviews
 
 
 class ProductViewSet(ModelViewSet):
@@ -99,3 +99,16 @@ class CustomerViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
         return Response('ok')
+
+
+class OrderViewSet(ModelViewSet):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+
+        customer_id = Customer.objects.only('id').filter(
+            user_id=self.request.user.id).first()
+        return Order.objects.filter(customer_id=customer_id)
