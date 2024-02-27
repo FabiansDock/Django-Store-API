@@ -11,12 +11,12 @@ from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from store.filters import ProductFilter
 from store.pagination import ProductPagination
 from store.permissions import IsAdminOrReadOnly, ViewHistoryPermission
-from .serializers import AddItemSerializer, CartItemsSerializer, CollectionSerializer, CreateOrderSerializer, CustomerSerializer, OrderSerializer, ProductSerializer, ReviewSerializer, CartSerializer, UpdateItemSerializer
-from .models import Cart, CartItem, Collection, Customer, Order, OrderItem, Product, Reviews
+from .serializers import AddItemSerializer, CartItemsSerializer, CollectionSerializer, CreateOrderSerializer, CustomerSerializer, OrderSerializer, ProductImageSerializer, ProductSerializer, ReviewSerializer, CartSerializer, UpdateItemSerializer, UpdateOrderSerializer
+from .models import Cart, CartItem, Collection, Customer, ProductImage, Order, OrderItem, Product, Reviews
 
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.prefetch_related('images').all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter
@@ -29,6 +29,19 @@ class ProductViewSet(ModelViewSet):
         if OrderItem.objects.filter(product_id=kwargs['pk']).count() > 0:
             return Response({'error': 'Cannot delete product.'})
         return super().destroy(request, *args, **kwargs)
+
+
+class ProductImageViewSet(ModelViewSet):
+    queryset = ProductImage.objects.all()
+    serializer_class = ProductImageSerializer
+
+    def get_queryset(self):
+        queryset = ProductImage.objects.filter(
+            product_id=self.kwargs['product_pk'])
+        return queryset
+
+    def get_serializer_context(self):
+        return {'product_id': self.kwargs['product_pk']}
 
 
 class CollectionViewSet(ModelViewSet):
@@ -102,9 +115,10 @@ class CustomerViewSet(ModelViewSet):
 
 
 class OrderViewSet(ModelViewSet):
+    http_method_names = ['get', 'delete', 'patch', 'header', 'options']
 
     def get_permissions(self):
-        if self.request.method in ['DELETE', 'PATCH', 'PUT']:
+        if self.request.method in ['DELETE', 'PATCH']:
             return [IsAdminUser()]
         return [IsAuthenticated()]
 
@@ -119,6 +133,8 @@ class OrderViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return CreateOrderSerializer
+        elif self.request.method == 'PATCH':
+            return UpdateOrderSerializer
         return OrderSerializer
 
     def get_queryset(self):
