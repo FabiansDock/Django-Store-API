@@ -1,11 +1,14 @@
 from django.contrib import admin, messages
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.db.models.query import QuerySet
-from django.http.request import HttpRequest
 from django.db.models.aggregates import Count
 from django.utils.html import format_html, urlencode
 from django.urls import reverse
 from . import models
+from tags.models import TaggedItem
+
+admin.site.site_header = 'Storefront Admin'
+admin.site.index_title = 'Admin'
 
 
 class InventoryFilter(admin.SimpleListFilter):
@@ -31,13 +34,13 @@ class CollectionAdmin(admin.ModelAdmin):
         url = (reverse('admin:store_product_changelist')
                + '?'
                + urlencode({
-                   'collection__id': str(collection.id)
+                   'collection_id': str(collection.id)
                }))
         return format_html('<a href="{}">{}</a>', url, collection.products_count)
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
-            products_count=Count('product')
+            products_count=Count('products')
         )
 
 
@@ -64,14 +67,27 @@ class CustomerAdmin(admin.ModelAdmin):
         )
 
 
+class ProductImageInline(admin.TabularInline):
+    model = models.ProductImage
+    readonly_fields = ['thumbnail']
+    extra = 0
+
+    def thumbnail(self, instance):
+        if instance.image.name != '':
+            return format_html(f'<img src="{instance.image.url}"/>')
+        return ''
+
+
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {
         'slug': ['title']
     }
     actions = ['clear_inventory']
+    inlines = [ProductImageInline]
     list_display = ['title', 'unit_price', 'collection']
     list_filter = [InventoryFilter]
+    search_fields = ['title']
 
     @admin.action(description='Clear unit price')
     def clear_inventory(self, request, queryset):
@@ -82,8 +98,15 @@ class ProductAdmin(admin.ModelAdmin):
             messages.ERROR
         )
 
+    class Media:
+        css = {
+            'all': ['store/styles.css']
+        }
+
 
 class OrderItemInline(admin.TabularInline):
+    autocomplete_fields = ['product']
+    min_num = 1
     model = models.OrderItem
     extra = 0
 

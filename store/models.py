@@ -1,9 +1,9 @@
+from uuid import uuid4
 from django.core.validators import MinValueValidator
 from django.db import models
-from uuid import uuid4
 from django.conf import settings
-
 from django.contrib import admin
+from .validators import validate_max_image_size
 
 
 class Promotion(models.Model):
@@ -29,17 +29,21 @@ class Product(models.Model):
     description = models.TextField(blank=True)
     unit_price = models.DecimalField(
         max_digits=6, decimal_places=2, validators=[MinValueValidator(1)])
-    inventory = models.IntegerField()
+    inventory = models.IntegerField(validators=[MinValueValidator(0)])
     last_update = models.DateTimeField(auto_now=True)
     collection = models.ForeignKey(
         Collection, on_delete=models.PROTECT, related_name='products')
     promotions = models.ManyToManyField(Promotion, blank=True)
 
+    def __str__(self) -> str:
+        return self.title
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='store/images')
+    image = models.ImageField(upload_to='store/images',
+                              validators=[validate_max_image_size])
 
 
 class Customer(models.Model):
