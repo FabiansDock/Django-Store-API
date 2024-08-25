@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.db.models.aggregates import Count
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
@@ -10,7 +10,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from store.filters import ProductFilter
 from store.pagination import ProductPagination
-from store.permissions import IsAdminOrReadOnly, ViewHistoryPermission
+from store.permissions import IsAdminOrReadOnly, ViewHistoryPermission, ViewModelPermissions
 from .serializers import AddItemSerializer, CartItemsSerializer, CollectionSerializer, CreateOrderSerializer, CustomerSerializer, OrderSerializer, ProductImageSerializer, ProductSerializer, ReviewSerializer, CartSerializer, UpdateItemSerializer, UpdateOrderSerializer
 from .models import Cart, CartItem, Collection, Customer, ProductImage, Order, OrderItem, Product, Reviews
 
@@ -94,7 +94,7 @@ class CartItemsViewSet(ModelViewSet):
 class CustomerViewSet(ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    permission_classes = [DjangoModelPermissions]
+    permission_classes = [ViewModelPermissions]
 
     @action(detail=True, permission_classes=[ViewHistoryPermission])
     def history(self, request, pk):

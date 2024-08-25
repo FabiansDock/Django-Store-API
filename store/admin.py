@@ -7,9 +7,6 @@ from django.urls import reverse
 from . import models
 from tags.models import TaggedItem
 
-admin.site.site_header = 'Storefront Admin'
-admin.site.index_title = 'Admin'
-
 
 class InventoryFilter(admin.SimpleListFilter):
     title = 'inventory'
