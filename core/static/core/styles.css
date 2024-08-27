@@ -1,0 +1,22 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: rgba(8, 125, 72, 0.919);
+}
+
+.home-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-color: white;
+  margin-top: 15%;
+}
+
+.title {
+  color: white;
+  font-size: 3rem;
+}
