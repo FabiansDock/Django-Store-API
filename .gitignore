@@ -1,4 +1,6 @@
 __pycache__/
 *.pyc
 *.txt
-storefront/secret.py
+/storefront/secret.py
+/static/
+general.log

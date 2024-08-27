@@ -16,6 +16,8 @@ djoser = "*"
 django-templated-email = "*"
 redis = "*"
 celery = "*"
+whitenoise = "*"
+gunicorn = "*"
 
 [dev-packages]
 django-debug-toolbar = "*"
