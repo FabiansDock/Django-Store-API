@@ -9,12 +9,12 @@ from .models import User
 
 class TagInline(GenericTabularInline):
     model = TaggedItem
+    autocomplete_fields = ['tag']
     extra = 1
 
 
 class CustomProductAdmin(ProductAdmin):
     inlines = [ProductImageInline, TagInline]
-
 
 
 @admin.register(User)
@@ -28,6 +28,7 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
     )
+
 
 admin.site.unregister(Product)
 admin.site.register(Product, CustomProductAdmin)

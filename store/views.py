@@ -69,7 +69,7 @@ class ReviewViewSet(ModelViewSet):
         return {'product_id': self.kwargs['product_pk']}
 
 
-class CartViewSet(CreateModelMixin, GenericViewSet, ListModelMixin, DestroyModelMixin):
+class CartViewSet(CreateModelMixin, ListModelMixin, DestroyModelMixin, GenericViewSet):
     queryset = Cart.objects.prefetch_related('items__product').all()
     serializer_class = CartSerializer
 
@@ -115,7 +115,7 @@ class CustomerViewSet(ModelViewSet):
 
 
 class OrderViewSet(ModelViewSet):
-    http_method_names = ['get', 'delete', 'patch', 'header', 'options']
+    http_method_names = ['get', 'post', 'delete', 'patch', 'header', 'options']
 
     def get_permissions(self):
         if self.request.method in ['DELETE', 'PATCH']:
